@@ -9,8 +9,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Set up permissions
-        run: chmod +x test.sh
       - name: Generate report and Send email
         run: bash test.sh
 
