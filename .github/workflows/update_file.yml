@@ -12,5 +12,5 @@ jobs:
       - name: Set up permissions
         run: chmod +x test.sh
       - name: Generate report and Send email
-        run: ./test.sh
+        run: bash test.sh
 
