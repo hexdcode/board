@@ -1,0 +1,13 @@
+name: Generate Report
+
+on:
+ workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+    # Reduced the code for brevity
+    - name: Generate report and Send email
+      run: |
+        test.sh
