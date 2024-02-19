@@ -7,9 +7,10 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-    - name: Set up permissions
-      run: chmod +x test.sh
-    # Reduced the code for brevity
-    - name: Generate report and Send email
-      run: |
-        test.sh
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up permissions
+        run: chmod +x test.sh
+      - name: Generate report and Send email
+        run: test.sh
+
