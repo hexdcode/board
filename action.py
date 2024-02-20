@@ -1,21 +1,17 @@
-import asyncio
-from pyppeteer import launch
+# vim test.py
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
-async def get_page_content(url):
-    # 启动浏览器
-    browser = await launch(headless=True)  # 确保在无头模式下运行
-    page = await browser.newPage()
-    # 打开网页
-    await page.goto(url)
-    # 获取页面内容
-    content = await page.content()
-    # 打印页面内容
-    print(content)
-    # 关闭浏览器
-    await browser.close()
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-# 示例URL
-url = 'http://example.com'
+driver.get("https://python.org")
 
-# 运行异步任务
-asyncio.get_event_loop().run_until_complete(get_page_content(url))
+with open('test.html', 'w', encoding='utf-8') as f:
+    f.write(driver.page_source)
+driver.close()
