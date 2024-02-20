@@ -10,8 +10,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Generate report and Send email
-        run: bash test.sh
       - uses: browser-actions/setup-chrome@v1
       - uses: actions/setup-python@v2
       - run: chrome --version
