@@ -8,6 +8,9 @@ from lxml import html
 import pytz
 
 alert_dates = set()
+with open('extra.txt', 'r') as f:
+    for line in f:
+        alert_dates.add(line.strip())
 
 def get_deepest_element(element):
     """
