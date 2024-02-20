@@ -17,3 +17,9 @@ jobs:
       - name: install dependencies
       - run: pip install selenium
       - run: python action.py
+      - run: |
+          git config --global user.email "hexdcode@proton.me"
+          git config --global user.name "hexdcode"
+          git add -A
+          git commit -m "Updated file" -a || echo "No changes to commit"
+          git push
