@@ -22,5 +22,6 @@ jobs:
           git config --global user.name "hexdcode"
           git add -A
           git commit -m "Updated file" -a || echo "No changes to commit"
+          git push
           
       
