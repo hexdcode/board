@@ -78,8 +78,8 @@ def add_alert(input_date, input_time, data):
 
 
 # now
-# now = datetime.now()
-now = datetime.strptime('20240316', '%Y%m%d')
+now = datetime.now()
+# now = datetime.strptime('20240316', '%Y%m%d')
 
 # 未来3天的日历URL
 dates = [now + timedelta(days=i) for i in range(3)]
@@ -192,63 +192,3 @@ for date in dates:
 
 with open('alert_dates.txt', 'w') as f:
     f.write('\n'.join(alert_dates))
-
-
-# driver.get("https://rili.jin10.com/day/2024-02-19")
-
-# with open('test.html', 'w', encoding='utf-8') as f:
-#     f.write(driver.page_source)
-# driver.close()
-
-
-
-# with open('test.html', 'r', encoding='utf-8') as f:
-#     html_string = f.read()
-
-# doc = html.fromstring(html_string)
-# tr_elements = doc.xpath('//*[@class="jin-table calendar-data-table"]/div[2]/table/tbody/tr')
-
-
-
-# print(len(tr_elements))
-
-
-# for data in economic_data:
-#     print(data)
-
-
-# economic_events = []
-# tr_elements = doc.xpath('//*[@class="jin-table calendar-event-table"]/div[2]/table/tbody/tr')
-# for tr in tr_elements:
-#     td_elements = tr.xpath('./td')
-#     if len(td_elements) == 1:
-#         continue
-    
-#     economic_events.append([])
-
-#     # 时间
-#     time = get_text(td_elements[0])
-#     if time:
-#         economic_events[-1].append(time)
-#     else:
-#         if len(economic_events) > 1:
-#             economic_events[-1].append(economic_events[-2][0])
-    
-#     # 国家
-#     country = get_text(td_elements[1])
-#     economic_events[-1].append(country)
-    
-
-#     # 重要性
-#     importance = td_elements[2].xpath('.//i[not(starts-with(@style, "color: rgb(221, 221, 221)"))]')
-#     importance = len(importance)
-#     economic_events[-1].append(importance)
-
-#     # 事件
-#     event = get_text(td_elements[3])
-#     economic_events[-1].append(event)
-
-#     print()
-
-# print(economic_events)
-
