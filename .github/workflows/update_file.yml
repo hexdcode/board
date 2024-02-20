@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-python@v2
       - run: chrome --version
       - name: install dependencies
-        run: pip install selenium webdriver_manager
+        run: pip install selenium webdriver_manager lxml pytz
       - run: python action.py
       - run: |
           git config --global user.email "hexdcode@proton.me"
