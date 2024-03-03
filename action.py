@@ -47,6 +47,10 @@ def send_email(sender_email, smtp_password, receiver_email, subject, body):
 email_address, email_password, email_target = sys.argv[1], sys.argv[2], sys.argv[3]
 print(email_target)
 
+# 暂时只做CADCHF
+# 每个value都是[item1, item2, ...]
+# 每个item的形式为[impact_threshold, keyword1, keyword2, ...]
+# 重要性大于等于impact_threshold且包含所有keyword的事件会记录
 configs = {
   'CADCHF': [
     [3, '加拿大'], # 重要性大于等于3的加拿大经济数据
