@@ -8,6 +8,9 @@ from lxml import html
 import pytz
 import pandas as pd
 import pandas_market_calendars as mcal
+import sys
+
+email_address, email_password = sys.argv[1], sys.argv[2]
 
 configs = {
   'CADCHF': [
