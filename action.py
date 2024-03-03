@@ -45,6 +45,7 @@ def send_email(sender_email, smtp_password, receiver_email, subject, body):
         print("邮件发送失败", e)
 
 email_address, email_password, email_target = sys.argv[1], sys.argv[2], sys.argv[3]
+print(email_target)
 
 configs = {
   'CADCHF': [
