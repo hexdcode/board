@@ -15,7 +15,7 @@ jobs:
       - run: chrome --version
       - name: install dependencies
         run: pip install selenium webdriver_manager lxml pytz pandas pandas_market_calendars
-      - run: python action.py ${{ secrets.EMAIL_PASSWORD }}
+      - run: python action.py ${{ secrets.EMAIL_ADDRESS }} ${{ secrets.EMAIL_PASSWORD }} ${{ secrets.EMAIL_TARGET }}
       - run: |
           git config --global user.email "hexdcode@proton.me"
           git config --global user.name "hexdcode"
