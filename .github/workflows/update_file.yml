@@ -9,6 +9,8 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
+      - name: Set timezone
+        run: echo "TZ=Asia/Shanghai" >> $GITHUB_ENV
       - name: Checkout repository
         uses: actions/checkout@v4
       - uses: browser-actions/setup-chrome@v1
