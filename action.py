@@ -6,11 +6,35 @@ from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
 from lxml import html
 import pytz
+import pandas as pd
+import pandas_market_calendars as mcal
 
-alert_dates = set()
-with open('extra.txt', 'r') as f:
-    for line in f:
-        alert_dates.add(line.strip())
+configs = {
+  'CADCHF': [
+    [3, '加拿大'], # 重要性大于等于3的加拿大经济数据
+    [3, '瑞士'],  # 
+    [5, '美国'], # 重要性大于等于5的美国失业率数据
+    [0, '加拿大', 'GDP'], # 任何包含"加拿大"和"GDP"的经济数据
+  ]
+}
+
+# target timezone
+tz_target = pytz.timezone('Etc/GMT-2')
+
+# 判断是否符合configs中的条件
+def is_match(symbol, caption, impact):
+    """
+    symbol: str, 交易品种, configs中的key
+    caption: str, 经济数据标题
+    impact: int, 经济数据重要性
+    """
+    # print(caption, impact)
+    for config in configs[symbol]:
+        if config[0] <= impact and all(kw in caption for kw in config[1:]):
+            return True
+    return False
+
+alert_times = []
 
 def get_deepest_element(element):
     """
@@ -78,15 +102,56 @@ def add_alert(input_date, input_time, data):
         # dates_covered.add(current_date.strftime("%Y%m%d"))
     print(input_date, input_time, data)
     
+# 将给定时间（北京）转换为UTC时间，使用pd.Timestamp对象
+def beijing_to_utc(date, time):
+    if isinstance(date, datetime):
+        date = date.strftime('%Y%m%d')
+    # 创建北京时区对象
+    tz_beijing = pytz.timezone('Asia/Shanghai')
+    # 创建UTC时区对象
+    tz_utc = pytz.timezone('UTC')
+    # 将输入时间字符串转换为datetime对象
+    dt = datetime.strptime(f"{date} {time}", "%Y%m%d %H:%M")
+    # 将datetime对象转换为带有时区的datetime对象
+    dt_aware = tz_beijing.localize(dt)
+    # 将带有时区的datetime对象转换为UTC时间
+    dt_utc = dt_aware.astimezone(tz_utc)
+    # 返回UTC时间的时间字符串
+    return dt_utc
 
+def next_begin_sessions(t1):
+    # 定义纽约和伦敦的交易市场
+    nyse_calendar = mcal.get_calendar('NYSE')
+    lse_calendar = mcal.get_calendar('LSE')  # 伦敦证券交易所
+
+    # 将输入的时间转换为pandas的时间戳
+    t1 = pd.Timestamp(t1)
+    
+    # 获取给定时间之后的纽约和伦敦的下一个完整交易日
+    nyse_schedule = nyse_calendar.schedule(start_date=t1 - pd.DateOffset(days=7), end_date=t1)
+    lse_schedule = lse_calendar.schedule(start_date=t1 - pd.DateOffset(days=7), end_date=t1)
+    
+    # 获取自t1开始后第一个完整的NewYork交易时段的结束时间
+    nyse_end = nyse_schedule.loc[nyse_schedule['market_close'] <= t1]['market_open'].iloc[-1]
+    # 获取自t1开始后第一个完整的London交易时段的结束时间
+    lse_end = lse_schedule.loc[lse_schedule['market_close'] <= t1]['market_open'].iloc[-1]
+    
+    return min(nyse_end, lse_end).to_pydatetime()
+
+# UTC转换为GMT+2
+def utc_to_target(t):
+    # 创建目标时区对象
+    tz_target = pytz.timezone('Etc/GMT-2')
+    t_target = t.astimezone(tz_target)
+    return t_target
 
 # now
 now = datetime.now()
 # now = datetime.strptime('20240316', '%Y%m%d')
 
 # 未来3天的日历URL
-dates = [now + timedelta(days=i) for i in range(3)]
-urls = [f"https://rili.jin10.com/day/{(now + timedelta(days=i)).strftime('%Y-%m-%d')}" for i in range(3)]
+dates = [now + timedelta(days=i) for i in range(7)]
+urls = [f"https://rili.jin10.com/day/{(now + timedelta(days=i)).strftime('%Y-%m-%d')}" for i in range(7)]
 
 options = Options()
 options.add_argument('--headless')
@@ -176,22 +241,34 @@ for date in dates:
         event = get_text(td_elements[3])
         economic_events[-1].append(event.strip())
     
-    # 判断是否有美国非农/美联储利率/美国CPI数据
     for data in economic_data:
-        if '美国' in data[1] and ('非农' in data[1] or '联储利率' in data[1] or 'CPI' in data[1]):
-            add_alert(date.strftime('%Y%m%d'), data[0], data)
-    
-    # for event in economic_events:
-    #     print(event)
+        for symbol in configs:
+            if is_match(symbol, data[1], data[2]):
+                print(date, data[0], data[1])
+                # 将该数据的时间的前1小时和后3小时添加到alert_times
+                alert_times.append(
+                    (
+                        # beijing_to_utc(date, data[0]) - timedelta(hours=1), 
+                        next_begin_sessions(beijing_to_utc(date, data[0])),
+                        beijing_to_utc(date, data[0]) + timedelta(hours=3)
+                    )
+                )
+                break
 
-    # 判断是否有瑞士、加拿大利率决议/公投/选举事件
-    for event in economic_events:
-        if '瑞士' in event[3] and '利率决议' in event[3]:
-            add_alert(date.strftime('%Y%m%d'), event[0], event)
-        if '加拿大' in event[3] and '利率决议' in event[3]:
-            add_alert(date.strftime('%Y%m%d'), event[0], event)
-        if '公投' in event[3] or '选举' in event[3]:
-            add_alert(date.strftime('%Y%m%d'), event[0], event)
 
-with open('alert_dates.txt', 'w') as f:
-    f.write('\n'.join(alert_dates))
+output_fmt = '%Y.%m.%d %H:%M'
+with open('CADCHF', 'r')  as f:
+    output = f.readlines()
+output = [line.strip() for line in output]
+print(output)
+output = [(output[i], output[i + 1]) for i in range(0, len(output), 2) if output[i + 1] > datetime.now(tz_target).strftime(output_fmt)]
+for t1, t2 in alert_times:
+    output.append((utc_to_target(t1).strftime('%Y.%m.%d %H:%M'), utc_to_target(t2).strftime('%Y.%m.%d %H:%M')))
+output = set(output)
+output = [t for ts in output for t in ts]
+
+with open('CADCHF', 'w') as f:
+    f.write('\n'.join(output))
+
+
+print(alert_times)
