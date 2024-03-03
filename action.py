@@ -301,7 +301,7 @@ for date in dates:
 output_fmt = '%Y.%m.%d %H:%M'
 with open('CADCHF', 'r')  as f:
     output = f.readlines()
-output = [line.strip() for line in output]
+output = [line.strip() for line in output if line.strip() != '']
 print(output)
 output = [(output[i], output[i + 1]) for i in range(0, len(output), 2) if output[i + 1] > datetime.now(tz_target).strftime(output_fmt)]
 for t1, t2 in alert_times:
